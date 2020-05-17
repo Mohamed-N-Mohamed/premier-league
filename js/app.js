@@ -1,9 +1,16 @@
-//api link
-const url ="https://api.football-data.org/v2/competitions/PL/standings?standingType=TOTAL";
+//gets pl data only
+const url =
+  "https://api.football-data.org/v2/competitions/PL/standings?standingType=TOTAL";
+
+//gets match data only
+const url2 =
+  "https://api.football-data.org/v2/competitions/PL/matches?dateFrom=2020-05-01&dateTo=2020-05-30";
 //key to access data
 const token = "f614d65eae1141b49ddba63d88b10ec5";
 
 const displayData = document.getElementById("data");
+
+const displayMatches = document.getElementById("matches");
 
 //fetches data from api
 async function getPLData() {
@@ -15,10 +22,21 @@ async function getPLData() {
   //get all premier league data
   let standings = data.standings[0].table;
   //send data to create UI
-  createUI(standings);
+  createTable(standings);
 }
 
-function createUI(data) {
+//fetch match data from api
+async function getMatchData() {
+  const response = await fetch(url2, {
+    method: "GET",
+    headers: { "X-Auth-Token": token },
+  });
+  const data = await response.json();
+  createMatchUI(data);
+}
+
+//creates DOM table
+function createTable(data) {
   let html = "";
   data
     .map((data) => {
@@ -41,7 +59,7 @@ function createUI(data) {
     })
     .join("");
 
-    displayData.innerHTML = `
+  displayData.innerHTML = `
   <table class="table">
        <thead class="thead-dark">
           <tr>
@@ -64,7 +82,21 @@ function createUI(data) {
   `;
 }
 
+function createMatchUI(matches) {
+  matches.matches
+    .map((match) => {
+      const awayTeam = match.awayTeam.name;
+      const homeTeam = match.homeTeam.name;
+      displayMatches.innerHTML = ` <ul class="list-group list-group-horizontal-lg">
+    <li class="list-group-item">${awayTeam}</li>
+    <li class="list-group-item"><strong>VS</strong></li>
+    <li class="list-group-item">${homeTeam}</li>`;
+    })
+    .join("");
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   //fetch data from api and display them
   getPLData();
+  getMatchData();
 });
